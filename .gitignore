@@ -27,3 +27,9 @@ override.tf.json
 
 # Include tfplan files to ignore the plan output of command: terraform plan -out=tfplan
 # example: *tfplan*
+
+.DS_Store
+.././.DS_Store
+.terraform.lock.hcl
+services/packer/sahara/output-vmware-iso
+services/packer/sahara/packer_cache

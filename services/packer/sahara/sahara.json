@@ -1,0 +1,68 @@
+{
+    "variables": {
+        "vm_name": "debian-8.11.1-amd64",
+        "numvcpus": "1",
+        "memsize": "1024",
+        "disk_size": "40960",
+        "iso_url": "https://cdimage.debian.org/cdimage/archive/8.11.1/amd64/iso-cd/debian-8.11.1-amd64-netinst.iso",
+        "iso_checksum": "ea444d6f8ac95fd51d2aedb8015c57410d1ad19b494cedec6914c17fda02733c",
+        "ssh_username" : "boris",
+        "ssh_password" : "johnson",
+        "boot_wait": "5s"
+      },
+      "builders": [
+        {
+          "type": "vmware-iso",
+          "boot_command": ["<esc>auto preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg<enter>"],
+          "boot_wait": "{{ user `boot_wait` }}",
+          "disk_size": "{{ user `disk_size` }}",
+          "disk_type_id": "0",
+          "guest_os_type": "debian10-64",
+          "headless": false,
+          "http_directory": "http",
+          "iso_checksum": "{{ user `iso_checksum` }}",
+          "iso_url": "{{ user `iso_url` }}",
+          "shutdown_command": "echo 'packer'|sudo -S shutdown -P now",
+          "ssh_password": "{{ user `ssh_password` }}",
+          "ssh_port": 22,
+          "ssh_username": "{{ user `ssh_username` }}",
+          "ssh_timeout": "30m",
+          "vm_name": "{{ user `vm_name` }}",
+          "vmx_data": {
+            "memsize": "{{ user `memsize` }}",
+            "numvcpus": "{{ user `numvcpus` }}",
+            "virtualHW.version": "14"
+          }
+        }
+    ],
+    "provisioners": [
+      {
+        "type": "shell",
+        "execute_command": "echo 'packer'|{{.Vars}} sudo -S -E bash '{{.Path}}'",
+        "scripts": ["scripts/provision.sh"]
+      }
+    ],
+    "post-processors" : [
+        [
+           {
+             "type": "shell-local",
+             "inline": [ "/Applications/VMware\\ Fusion.app/Contents/Library/VMware\\ OVF\\ Tool/ovftool output-vmware-iso/debian-8.11.1-amd64.vmx output-vmware-iso/debian-8.11.1-amd64.ova" ]
+           },
+           {
+              "files": [
+                "output-vmware-iso/debian-8.11.1-amd64.ova"
+              ],
+              "type": "artifice"
+           },
+           {
+             "type": "amazon-import",
+             "region": "eu-west-1",
+             "s3_bucket_name": "gradctf-importbucket",
+             "license_type": "BYOL",
+             "tags": {
+               "Description": "packer amazon-import {{timestamp}}"
+             }
+          }
+       ]
+     ]
+}

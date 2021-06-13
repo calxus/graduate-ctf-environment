@@ -1,0 +1,31 @@
+{
+    "provisioners": [
+        {
+            "execute_command": "sudo -S sh -c '{{ .Vars }} {{ .Path }}'",
+            "remote_path": "/home/kali/kali.sh",
+            "type": "shell",
+            "scripts": ["./kali.sh"]
+        }
+    ],
+    "builders": [
+      {
+        "type": "amazon-ebs",
+        "source_ami_filter": {
+          "filters": {
+            "virtualization-type": "hvm",
+            "name": "kali-linux-2021*",
+            "root-device-type": "ebs"
+          },
+          "owners": ["679593333241"],
+          "most_recent": true
+        },
+        "instance_type": "t2.medium",
+        "ssh_username": "kali",
+        "region": "eu-west-1",
+        "ami_name": "kali-linux-{{timestamp}}",
+        "run_volume_tags": {
+          "Name": "packer-temp-resource"
+        }
+      }
+    ]
+  }
